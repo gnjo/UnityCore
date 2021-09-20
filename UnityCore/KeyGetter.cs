@@ -1,17 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Threading.Tasks;
 
+//unity
+#if ENABLE_MONO
+
+using UnityEngine;
 public class KeyGetterObject : MonoBehaviour
 {
     void Update()
     {
-        if(Input.anyKeyDown)
-            foreach(var m in KeyGetter.InputMap)
-                if(Input.GetKeyDown(m.Key)) m.Value();
+        if (Input.anyKeyDown)
+            foreach (var m in KeyGetter.InputMap)
+                if (Input.GetKeyDown(m.Key)) m.Value();
     }
 }
+
+#endif
+//
 
 public static class KeyGetter
 {
@@ -33,6 +39,8 @@ public static class KeyGetter
     };
 
     static string key = "";
+
+#if ENABLE_MONO
     static GameObject go;
     public static async Task<string> Get()
     {
@@ -44,6 +52,25 @@ public static class KeyGetter
         while(key=="") await Task.Delay(16);
         return key;
     }
+#else //consle application
+    public static async Task<string> Get()
+    {
+        key = "";
+        while (key == ""){
+            var info = System.Console.ReadKey(true);
+            var wk =info.KeyChar.ToString();
+            if(info.Key == System.ConsoleKey.Spacebar) wk="space";
+            else if(info.Key == System.ConsoleKey.Escape) wk="escape";
+            foreach (var m in KeyGetter.InputMap)
+                if (wk==m.Key) m.Value();
+
+            await Task.Delay(16);
+        }
+        return key;
+    }
+
+#endif    
+
 
     //for touch 
     public static void PressArrowUp() => key = "_U";
@@ -73,5 +100,19 @@ public static class KeyGetter
         }
         Debug.Log("end");
     }
+
+*/
+
+/*
+        static async Task Main(string[] args)
+        {
+            var key="";
+            while(key!="P"){
+                key = await KeyGetter.Get();
+
+                Console.WriteLine(key);
+            }
+            Console.ReadLine();
+        }
 
 */
