@@ -6,6 +6,14 @@ namespace mimic
     using System.Threading.Tasks;
     using System.Reflection;
 
+
+#if !ENABLE_MONO
+    public static class Debug
+    {
+        public static void Log(object s) => System.Console.WriteLine(s);
+    }
+#endif    
+
     public static class MimicExteinsion
     {
         public static string[] Split(this string s, string sep, int count)
@@ -172,7 +180,6 @@ namespace mimic
 
     }//class
 
-
     public static class MimicDataMappingExtension
     {
         internal static string ToData(this string me)
@@ -256,6 +263,33 @@ namespace mimic
             next();
             await Task.Delay(0);
         }
+
+        //
+        public async Task DBG(string cmd, string arg)
+        {
+            arg = arg.ToData();
+            Debug.Log(arg);
+            gData["$" + cmd] = "" + arg;
+            next();//need next
+            await Task.Delay(0);
+        }
+
+        public async Task WAI(string cmd, string arg)
+        {
+            var num = arg.ToData().ToValue<int>(0);
+            await Task.Delay(num);
+            gData["$" + cmd] = "" + num;
+            next();//
+            //await Task.Delay(0);
+        }
+
+        public async Task KEY(string cmd, string arg)
+        {
+            var ret = await KeyGetter.Get();
+            gData["$" + cmd] = ret;
+            next();//
+        }
+
     }
 }//namespace mimic
 
@@ -336,31 +370,7 @@ namespace mimic
 
 public class Mimic : MimicRunnerEx
 {
-    public async Task DBG(string cmd, string arg)
-    {
-        //need public
-        arg = arg.ToData();
-        Console.WriteLine(arg);
-        next();//need next
-        await Task.Delay(0);
-    }
 
-    public async Task WAI(string cmd, string arg)
-    {
-        //need public
-        var num = arg.ToData().ToValue(0);
-        await Task.Delay(num);
-        next();//need next
-        await Task.Delay(0);
-    }
-
-    public async Task KEY(string cmd, string arg)
-    {
-        var k =await KeyGetter.Get();
-        gData["$"+cmd] =k;
-        next();//need next
-        await Task.Delay(0);
-    }
 }
 
 */

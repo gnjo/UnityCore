@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 //unity
 #if ENABLE_MONO
-
 using UnityEngine;
 public class KeyGetterObject : MonoBehaviour
 {

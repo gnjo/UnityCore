@@ -1,3 +1,4 @@
+#if ENABLE_MONO
 namespace mimic{
     using System.Collections.Generic;
     using UnityEngine;
@@ -5,27 +6,6 @@ namespace mimic{
 
     public class MimicUnity : MimicRunnerEx
     {
-        public async Task DBG(string cmd, string arg)
-        {
-            Debug.Log(arg.ToData());
-            next();//
-            await Task.Delay(0);
-        }
-
-        public async Task WAI(string cmd, string arg)
-        {
-            var num = arg.ToData().ToValue<int>(0);
-            await Task.Delay(num);
-            next();//
-                   //await Task.Delay(0);
-        }
-
-        public async Task KEY(string cmd, string arg)
-        {
-            var ret = await KeyGetter.Get();
-            gData["$" + cmd] = ret;
-            next();//
-        }
         public Dictionary<string, GameObject> go_cash = new Dictionary<string, GameObject>();
         public async Task ACT(string cmd, string arg)
         {
@@ -53,7 +33,65 @@ namespace mimic{
     }//class
 
 }//namespace
+#else
+namespace mimic
+{
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using System.Linq;
+    using System;
 
+    public class MimicConsole : MimicRunnerEx
+    {
+        public async Task SEL(string cmd, string arg)
+        {
+            //SEL a|b|c|d 3
+            var cep = "|";
+            var ary = arg.Param(SP, 2).Select(d => d.ToData()).ToArray();
+            var cur = ary[1].ToValue(0);
+            var a = ary[0].Split("|");
+            //
+            draw();
+            var k = "";
+            while (k != "A" && k != "B")
+            {
+                k = await KeyGetter.Get();
+                if (k == "_U")
+                {
+                    cur--;
+                    cur = (cur + 1000) % a.Length;
+                    draw();
+                }
+                else if (k == "_D")
+                {
+                    cur++;
+                    cur = (cur + 1000) % a.Length;
+                    draw();
+                }
+            }
+            //
+            gData["$KEY"] = k;
+            gData["$" + cmd] = "" + cur % a.Length;
+            next();
+            await Task.Delay(0);
+            return;
+            //
+            void draw()
+            {
+                Console.Clear();
+                for (var i = 0; i < a.Length; i++)
+                {
+                    var wk = (i == cur) ? "<color=#ff2288>" + a[i] + "</color>" : a[i];
+                    Console.WriteLine(wk);
+                }
+            }
+        }
+
+    }//class
+
+}//namespace
+
+#endif
 
 /*quick
 
