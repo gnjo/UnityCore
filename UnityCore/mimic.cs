@@ -1,5 +1,3 @@
-//2020.0918 v1.0
-//2020.0920 v1.1 ifinput a?b:c
 namespace mimic
 {
     using System.Linq;
@@ -26,6 +24,25 @@ namespace mimic
         {
             return s.Split(new string[] { sep }, System.StringSplitOptions.None);
         }
+
+
+        public static string[] Param(this string s, string sep, int count)
+        {
+            ///配列は必ず空白文字で初期化されている。
+            var right = Enumerable.Repeat("", count).ToArray();
+            var ary = s.Split(new string[] { sep }, count, System.StringSplitOptions.None);
+            for (var i = 0; i < ary.Length; i++) right[i] = ary[i];
+            return right;
+        }
+        public static string[] Param(this string s, char sep, int count)
+        {
+            return s.Param("" + sep, count);
+        }
+        public static string[] Param(this string s, string sep)
+        {
+            return s.Split(new string[] { sep }, System.StringSplitOptions.None);
+        }
+
 
         public static string ToLF(this string code)
         {
@@ -75,7 +92,7 @@ namespace mimic
             bool f(string d) => Regex.IsMatch(code, Regex.Escape(d));
             if (!map.Keys.Any(f)) return false;
             var ch = map.Keys.Where(f).First();
-            var ary = code.Split(ch, 2)
+            var ary = code.Param(ch, 2)
              .Select(d => d.Trim())
              .Select(d => d.ToMath())
              .ToArray()
@@ -95,7 +112,7 @@ namespace mimic
             bool f(string d) => Regex.IsMatch(code, Regex.Escape(d));
             if (!map.Keys.Any(f)) return f2(code);
             var ch = map.Keys.Where(f).First();
-            var ary = code.Split(ch, 2)
+            var ary = code.Param(ch, 2)
              .Select(d => d.Trim())
              .Select(d => f2(d))
              .ToArray()
@@ -155,23 +172,6 @@ namespace mimic
 
     }//class
 
-    //三項演算子
-    public static class isifinputExtension
-    {
-        public static bool isIfinput(this string @this)
-        {
-            var p = @"^(.+)\?(.+):(.+)";
-            return Regex.IsMatch(@this, p);
-        }
-        public static string[] ToIfinputParam(this string @this)
-        {
-            var p = @"^(.+)\?(.+):(.+)";
-            var m = Regex.Matches(@this, p).First().Groups;
-            var ary = new List<string>();
-            for (var i = 1; i < m.Count; i++) ary.Add(m[i].Value.Trim());
-            return ary.ToArray();
-        }
-    }//class
 
     public static class MimicDataMappingExtension
     {
@@ -201,7 +201,7 @@ namespace mimic
         protected void next(int i = -1) => tick = i == -1 ? tick + 1 : i;
         protected async Task docmd(string cmdline)
         {
-            var args = cmdline.Split(SP, 2);
+            var args = cmdline.Param(SP, 2);
             MethodInfo method = this.GetType().GetMethod(args[0]);
             if (method == null) next();
             else await (Task)method.Invoke(this, args.ToArray());
@@ -225,7 +225,7 @@ namespace mimic
         public async Task IFJ(string cmd, string arg)
         {
             //IFJ a #xyz
-            var ary = arg.Split(SP, 2).Select(d => d.Trim()).ToArray();
+            var ary = arg.Param(SP, 2).Select(d => d.Trim()).ToArray();
             var flg = ary[0].ToData().ToValue(false);
             var addr = ary[1];
             var i = -1;
@@ -248,13 +248,8 @@ namespace mimic
         {
             //SET $a 1234
             decimal badcode = -909090;
-            var ary = arg.Split(SP, 2).Select(d => d.Trim()).ToArray();
+            var ary = arg.Param(SP, 2).Select(d => d.Trim()).ToArray();
             var wk =ary[1].ToData();
-            //三項演算子
-            if(wk.isIfinput()){
-                var b=wk.ToIfinputParam();
-                wk=b[0].ToValue(false)?b[1]:b[2];
-            }
             var num =wk.ToValue<decimal>(badcode);
             gData[ary[0]] = (num == badcode)?wk:num.ToString();
             gData["$" + cmd] = arg;
@@ -275,7 +270,7 @@ namespace mimic
         public override string[] parse(string code)
         {
 
-            //return code.Trim().ToLF().Split(LF).Select(d => d.Trim()).ToArray();
+            //return code.Trim().ToLF().Param(LF).Select(d => d.Trim()).ToArray();
 
             code = code.Trim().ToLF() + LF;
             var re = @"{{{[\s\S]*?}}}|\$.+ =\.[\s\S]*?\/\/|.*\s";
@@ -297,13 +292,13 @@ namespace mimic
             var buf = str;
             if (Regex.IsMatch(buf, @"=\."))
             {
-                var ary = buf.Split("=.", 2).Select(dd => dd.Trim()).ToArray();
-                var wk = ary[1].Split("//").First().Trim();
+                var ary = buf.Param("=.", 2).Select(dd => dd.Trim()).ToArray();
+                var wk = ary[1].Param("//").First().Trim();
                 return "SET" + SP + ary[0] + SP + wk; //ary[1];
             }
             if (Regex.IsMatch(buf, @"^\$"))
             {
-                var ary = buf.Split("=", 2).Select(dd => dd.Trim()).ToArray();
+                var ary = buf.Param("=", 2).Select(dd => dd.Trim()).ToArray();
                 return "SET" + SP + ary[0] + SP + ary[1];
             }
             //#start //=> MRK #start
@@ -314,14 +309,14 @@ namespace mimic
             //>>> $a=b >>>#start => IFJ $a=b #start
             if (Regex.IsMatch(buf, @"^>>>(.*)>>>"))
             {
-                var ary = buf.Split(">>>", 3).Select(dd => dd.Trim()).ToArray();
+                var ary = buf.Param(">>>", 3).Select(dd => dd.Trim()).ToArray();
                 return "IFJ" + SP + ary[1] + SP + ary[2];
             }
 
             //>>> #start //=> IFJ 1 #start
             if (Regex.IsMatch(buf, @"^>>>"))
             {
-                var ary = buf.Split(">>>", 2).Select(dd => dd.Trim()).ToArray();
+                var ary = buf.Param(">>>", 2).Select(dd => dd.Trim()).ToArray();
                 return "IFJ 1" + SP + ary[1];
             }
             if (Regex.IsMatch(buf, @"^{{{"))
@@ -339,24 +334,33 @@ namespace mimic
 
 /*
 
-    public class Mimic:MimicRunnerEx{
-        public async Task DBG(string cmd,string arg){
-            //need public
-            arg =arg.ToData();
-            Console.WriteLine(arg);
-            next();//need next
-            await Task.Delay(0);
-        }
-
-        public async Task WAI(string cmd, string arg)
-        {
-            //need public
-            var num = arg.ToData().ToValue(0);
-            await Task.Delay(num);
-            next();//need next
-            await Task.Delay(0);
-        }
-
+public class Mimic : MimicRunnerEx
+{
+    public async Task DBG(string cmd, string arg)
+    {
+        //need public
+        arg = arg.ToData();
+        Console.WriteLine(arg);
+        next();//need next
+        await Task.Delay(0);
     }
+
+    public async Task WAI(string cmd, string arg)
+    {
+        //need public
+        var num = arg.ToData().ToValue(0);
+        await Task.Delay(num);
+        next();//need next
+        await Task.Delay(0);
+    }
+
+    public async Task KEY(string cmd, string arg)
+    {
+        var k =await KeyGetter.Get();
+        gData["$"+cmd] =k;
+        next();//need next
+        await Task.Delay(0);
+    }
+}
 
 */
