@@ -1,3 +1,5 @@
+//2020.0918 v1.0
+//2020.0920 v1.1 ifinput a?b:c
 namespace mimic
 {
     using System.Linq;
@@ -153,6 +155,23 @@ namespace mimic
 
     }//class
 
+    //三項演算子
+    public static class isifinputExtension
+    {
+        public static bool isIfinput(this string @this)
+        {
+            var p = @"^(.+)\?(.+):(.+)";
+            return Regex.IsMatch(@this, p);
+        }
+        public static string[] ToIfinputParam(this string @this)
+        {
+            var p = @"^(.+)\?(.+):(.+)";
+            var m = Regex.Matches(@this, p).First().Groups;
+            var ary = new List<string>();
+            for (var i = 1; i < m.Count; i++) ary.Add(m[i].Value.Trim());
+            return ary.ToArray();
+        }
+    }//class
 
     public static class MimicDataMappingExtension
     {
@@ -231,6 +250,11 @@ namespace mimic
             decimal badcode = -909090;
             var ary = arg.Split(SP, 2).Select(d => d.Trim()).ToArray();
             var wk =ary[1].ToData();
+            //三項演算子
+            if(wk.isIfinput()){
+                var b=wk.ToIfinputParam();
+                wk=b[0].ToValue(false)?b[1]:b[2];
+            }
             var num =wk.ToValue<decimal>(badcode);
             gData[ary[0]] = (num == badcode)?wk:num.ToString();
             gData["$" + cmd] = arg;
