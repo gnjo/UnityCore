@@ -91,6 +91,30 @@ public static class TransformExtension
 
 
 
+/*
+    //using DG.Tweening;
+
+    async Task RotR()
+    {
+        bool flg = true;
+        transform
+         .DOLocalRotateQuaternion(Quaternion.Euler(0, transform.localEulerAngles.y + moveangle, 0), movesec)
+         .OnComplete(() => flg = false)
+        ;
+        while (true) await Task.Delay(5);
+    }
+    async Task Foward()
+    {
+        bool flg = true;
+        transform
+         .DOLocalMove(transform.localPosition + movesize * getdirection(true), movesec)
+         .OnComplete(() => flg = false)
+        ;
+        while (true) await Task.Delay(5);
+    }
+
+*/
+
 
 /*sample
 
