@@ -40,12 +40,12 @@ namespace Uni3D
             //inbox
             float ex = -1;
             float[,] _POS = new float[,] {
-            { 0f, 0f+oh, -0.5f*ex },//front
-            { 0f, 0f+oh, 0.5f*ex },//back
-            { -0.5f*ex, 0f+oh, 0f },//left
-            { 0.5f*ex, 0f+oh, 0f },//right
-            { 0f, 0.5f*ex+oh, 0f },//up
-            { 0f, -0.5f*ex+oh, 0f }//down
+            { 0f, 0f+oh, -0.5f*ex },//N
+            { 0f, 0f+oh, 0.5f*ex },//S
+            { -0.5f*ex, 0f+oh, 0f },//E
+            { 0.5f*ex, 0f+oh, 0f },//W
+            { 0f, 0.5f*ex+oh, 0f },//G
+            { 0f, -0.5f*ex+oh, 0f }//C
         };
 
             GameObject customCube = new GameObject(name);
@@ -190,3 +190,10 @@ namespace Uni3D
     }
 
 }
+
+
+/*
+                var texs = new Texture2D[]{ N,S,E,W,G,C };
+                var go = makebox(texs, $"({x},{y})", true);
+
+*/
