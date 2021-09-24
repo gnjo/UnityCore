@@ -9,12 +9,15 @@ namespace Invoker
         public static async Task<dynamic> InvokeAsync(this MethodInfo @this, object obj, params object[] parameters)
         {
             //あらゆる関数をタスク化する。
-            dynamic awaitable = @this.Invoke(obj, parameters);
+            var awaitable = @this.Invoke(obj, parameters);
             if (isNonTask(@this) && awaitable != null) return awaitable;
             if (isNonTask(@this)) return true;
-            await awaitable;
-            if (isVoidTask(@this)) return true;
-            return awaitable.GetAwaiter().GetResult();
+            if (isVoidTask(@this)){
+                await (Task)awaitable;
+                return true;
+            }else{
+                return ((Task<dynamic>)awaitable).GetAwaiter().GetResult();
+            }
         }
 
         static bool isNonTask(MethodInfo m)
@@ -37,6 +40,7 @@ namespace Invoker
     {
         public static async Task<dynamic> cmdline(this string str, object instance)
         {
+
             System.Type objType = (instance is System.Type) ? (System.Type)instance : instance.GetType();
             char sep = ' ';
             var obj = (instance is System.Type) ? null : instance;
