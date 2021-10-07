@@ -2,6 +2,32 @@ using UnityEngine;
 using System.Collections;
 
 /*
+DrawTexture2D.csをassetとして追加して、以下のC#コードを記述。
+// Texture2Dの作成.
+int width  = 256;
+int height = 256;
+Texture2D m_texture = new Texture2D(width, height);
+
+// テクスチャ描画クラスの作成.
+DrawTexture2D m_drawTex2D = new DrawTexture2D();
+
+m_drawTex2D.Begin(m_texture);   // テクスチャへ描画開始.
+m_drawTex2D.Clear (new Color(0.0f, 0.2f, 0.0f));
+m_drawTex2D.DrawRectangleFill(10, 10, 60, 60, Color.gray);
+m_drawTex2D.DrawRectangle (0, 0, width - 1, height - 1, Color.green);
+       
+for (int i = 0; i < 100; i++) {
+    Color col = new Color((float)Random.value, (float)Random.value, (float)Random.value);
+    int x1 = (int)(Random.value * 255.0f);
+    int y1 = (int)(Random.value * 255.0f);
+    int x2 = (int)(Random.value * 255.0f);
+    int y2 = (int)(Random.value * 255.0f);
+    m_drawTex2D.DrawLine(x1, y1, x2, y2, col);
+}
+m_drawTex2D.End();              // テクスチャへ描画終了.
+*/
+
+/*
  * Texture2Dへの描画関数群.
  * できる限り、2の累乗のサイズのほうが速度が速い。
  */
