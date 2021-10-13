@@ -206,7 +206,8 @@ namespace mimic
         protected readonly char LF = '\n';
         protected readonly char SP = ' ';
         protected int tick = 0;
-        protected int subroutine = 99999;//
+        //protected int subroutine = 99999;//
+        protected Stack<int> stack_subroutine = new Stack<int>();//
         protected string[] codeary;
         protected bool isEnd() => tick > codeary.Length - 1;
         protected void next(int i = -1) => tick = i == -1 ? tick + 1 : i;
@@ -252,8 +253,8 @@ namespace mimic
             //sub routine
             if (flg && isSubRoutine(addr))
             {
-                if (isJumpBack(addr)) i = subroutine;
-                else subroutine = tick + 1;
+                if (isJumpBack(addr)) i = stack_subroutine.Pop();
+                else stack_subroutine.Push( tick + 1 );
             }
             //
 
