@@ -206,6 +206,7 @@ namespace mimic
         protected readonly char LF = '\n';
         protected readonly char SP = ' ';
         protected int tick = 0;
+        protected int subroutine = 99999;//
         protected string[] codeary;
         protected bool isEnd() => tick > codeary.Length - 1;
         protected void next(int i = -1) => tick = i == -1 ? tick + 1 : i;
@@ -232,18 +233,36 @@ namespace mimic
         }
 
         //basic command IFJ SET MRK
+        //###はサブルーチンとして機能する。
+        //###aaaに遷移することで、その場所を記憶する。
+        //また >>>### とすることで、記憶した場所に戻る。
         public async Task IFJ(string cmd, string arg)
         {
             //IFJ a #xyz
             var ary = arg.Param(SP, 2).Select(d => d.Trim()).ToArray();
-            var flg = ary[0].ToData().ToValue(false);
+            var wk = ary[0].ToData();
+            //Debug.Log(wk);
+            var flg = wk.ToValue(false);
+            //Debug.Log(flg);
             var addr = ary[1];
+            //Debug.Log(addr);
             var i = -1;
             if (flg) i = codeary.ToList().FindIndex((a) => Regex.IsMatch(a, @$"^MRK {addr}$"));
+
+            //sub routine
+            if (flg && isSubRoutine(addr))
+            {
+                if (isJumpBack(addr)) i = subroutine;
+                else subroutine = tick + 1;
+            }
             //
+
             gData["$" + cmd] = addr;
             next(i);
             await Task.Delay(0);
+            //
+            bool isJumpBack(string addr)=>Regex.IsMatch(addr, "^###+$");//###
+            bool isSubRoutine(string addr)=>Regex.IsMatch(addr, "^###");//###aiuewo
         }
 
         public async Task MRK(string cmd, string arg)
@@ -356,6 +375,14 @@ namespace mimic
                 var ary = buf.Param(">>>", 2).Select(dd => dd.Trim()).ToArray();
                 return "IFJ 1" + SP + ary[1];
             }
+
+            //IFJ $a=b >>>#start => IFJ $a=b #start
+            if (Regex.IsMatch(buf, @"^IFJ(.*)>>>"))
+            {
+                var ary = buf.Param(SP, 3).Select(dd => dd.Trim()).ToArray();
+                return "IFJ" + SP + ary[1] + SP + ary[2].Replace(">>>","");
+            }
+
             if (Regex.IsMatch(buf, @"^{{{"))
             {
                 buf = buf.Replace("{{{", "").Replace("}}}", "").Trim();
