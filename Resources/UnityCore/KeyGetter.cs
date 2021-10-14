@@ -86,7 +86,88 @@ public static class KeyGetter
     public static void PressS() => key = "S"; //like a start
     public static void PressP() => key = "P"; //like a pause
 
-}
+    public static (int dx,int dy,char v) KeyToNEWS(string key,char v='N'/*NEWS*/){
+        //A 前進
+        //_U 前進
+        //_D 後退
+        //_L 左を向く。その場で。
+        //_R 右を向く。その場で。
+        //L 左に一歩移動
+        //R 右に一歩移動
+        // N
+        //W E
+        // S
+        if(!"NEWS".Find(v)){
+            Debug($"KeyToNEWS error char v is NEWS:{v}");
+            v='N';
+        }
+        if(!isIncludeKey(key)){
+            Debug($"KeyToNEWS error char v is NEWS:{v}");
+            key="B";
+        }
+        var def =(0,0,v);
+        if("BXSP".Find(key))return def;
+        if ("A_U".Find(key)){
+            var d=diff(v);
+            return (d.dx,d.dy,v);
+        }
+        if (key=="_D"){
+            var n="NESW".IndexOf(v);
+            var wk="SWNE";
+            var d = diff(wk[n]);
+            return (d.dx, d.dy, v);
+        }
+        if(key=="_L"){
+            var n="NESW".IndexOf(v);
+            var wk="WNES";
+            return (0,0,wk[n]);
+        }
+        if(key=="_R"){
+            var n = "NESW".IndexOf(v);
+            var wk = "ESWN";
+            return (0,0,wk[n]);
+        }
+
+        if(key=="L"){
+            var n="NSEW".IndexOf(v);
+            var wk="WENS";
+            var d = diff(wk[n]);
+            return (d.dx, d.dy, v);
+        }
+        if(key=="R"){
+            var n = "NSEW".IndexOf(v);
+            var wk = "EWSN";
+            var d=diff(wk[n]);
+            return (d.dx,d.dy,v);
+        }
+        Debug("dont reach KeyToNEWS");
+        return def;
+        //
+        ;(int dx,int dy) diff(char v){
+            if(v=='N')return (0,-1);
+            else if(v=='S')return (0,1);
+            else if(v=='E')return (1,0);
+            else if(v=='W')return (-1,0);
+            return (0,0);
+        }
+    }
+    public static (int dx, int dy, char v) KeyToNEWS(string key,string v="N"/*NEWS*/){
+        return KeyToNEWS(key,v[0]);
+    }
+    static bool isIncludeKey(string key){
+        return "ABXYLRSP_U_D_L_R".Find(key);
+    }
+    static bool Find(this string @this,string ch)=>@this.IndexOf(ch)!=-1;
+    static bool Find(this string @this,char ch)=>@this.Find(""+ch);
+    static void Debug(string s){
+        #if ENABLE_MONO
+            Debug.Log(s);
+        #else
+            System.Console.WriteLine(s);
+        #endif
+    }
+
+}//class
 
 /*testcoce
 
